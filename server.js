@@ -8,15 +8,15 @@ const path = require('path');
 const app = express();
 const PORT = 8080;
 
-// 🔑 Hardcoded Login (UPDATED)
-const HARD_USERNAME = "JAI MAHAKAL";
-const HARD_PASSWORD = "JAI MAHAKAL";
+// 🔑 Hardcoded Login (Username & Password SAME)
+const HARD_USERNAME = "shgshjdhghdjkjhgdhj";
+const HARD_PASSWORD = "shgshjdhghdjkjhgdhj";
 
-// 📩 Footer controls (hardcoded)
+// 📩 Footer (auto add)
 const FOOTER_ENABLED = true;
 const FOOTER_TEXT = "📩 Scanned & Secured — www.avira.com";
 
-// Middleware
+// ================= MIDDLEWARE =================
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -33,11 +33,14 @@ function requireAuth(req, res, next) {
   return res.redirect('/');
 }
 
-// Routes
+// ================= ROUTES =================
+
+// Login page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// Login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -49,10 +52,12 @@ app.post('/login', (req, res) => {
   return res.json({ success: false, message: "❌ Invalid credentials" });
 });
 
+// Launcher page
 app.get('/launcher', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
 });
 
+// Logout
 app.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('connect.sid');
@@ -60,7 +65,7 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// Helpers
+// ================= HELPERS =================
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -74,7 +79,7 @@ async function sendBatch(transporter, mails, batchSize = 5) {
   }
 }
 
-// 📩 SEND MAIL
+// ================= SEND MAIL =================
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -123,7 +128,7 @@ app.post('/send', requireAuth, async (req, res) => {
   }
 });
 
-// Start server
+// ================= START SERVER =================
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
