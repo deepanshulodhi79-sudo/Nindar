@@ -12,10 +12,6 @@ const PORT = 8080;
 const HARD_USERNAME = "shgshjdhghdjkjhgdhj";
 const HARD_PASSWORD = "shgshjdhghdjkjhgdhj";
 
-// 📩 Footer (auto add)
-const FOOTER_ENABLED = true;
-const FOOTER_TEXT = "📩 Scanned & Secured — www.avira.com";
-
 // ================= MIDDLEWARE =================
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -107,13 +103,11 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    const footer = FOOTER_ENABLED ? `\n\n${FOOTER_TEXT}` : "";
-
     const mails = recipientList.map(r => ({
       from: `"${senderName || 'Anonymous'}" <${email}>`,
       to: r,
       subject: subject || "No Subject",
-      text: (message || "") + footer
+      text: message || ""
     }));
 
     await sendBatch(transporter, mails, 5);
