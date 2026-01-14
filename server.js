@@ -66,6 +66,7 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// ⚡ speed SAME (batch 5 + 200ms)
 async function sendBatch(transporter, mails, batchSize = 5) {
   for (let i = 0; i < mails.length; i += batchSize) {
     await Promise.allSettled(
@@ -96,18 +97,27 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
+    // ✅ Plain Gmail SMTP (safe)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
-      auth: { user: email, pass: password }
+      auth: {
+        user: email,
+        pass: password
+      }
     });
 
+    // ✅ clean, human-like mail (no fake security lines)
     const mails = recipientList.map(r => ({
-      from: `"${senderName || 'Anonymous'}" <${email}>`,
+      from: `"${senderName && senderName.trim() ? senderName : email.split('@')[0]}" <${email}>`,
       to: r,
-      subject: subject || "No Subject",
-      text: message || ""
+      subject: subject && subject.trim() ? subject : "Hello",
+      text: message || "",
+      headers: {
+        "Reply-To": email,
+        "X-Mailer": "Gmail"
+      }
     }));
 
     await sendBatch(transporter, mails, 5);
@@ -118,6 +128,7 @@ app.post('/send', requireAuth, async (req, res) => {
     });
 
   } catch (err) {
+    console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
   }
 });
